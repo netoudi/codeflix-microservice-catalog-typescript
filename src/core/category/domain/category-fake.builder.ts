@@ -4,18 +4,18 @@ import { Category, CategoryId } from '@/core/category/domain/category.entity';
 type PropOrFactory<T> = T | ((index: number) => T);
 
 export class CategoryFakeBuilder<TBuild = any> {
-  // auto generated in entity
-  private _category_id: PropOrFactory<CategoryId> | undefined = undefined;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private _category_id: PropOrFactory<CategoryId> = (_index) => new CategoryId();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private _name: PropOrFactory<string> = (_index) => this.chance.word();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private _description: PropOrFactory<string | null> = (_index) => this.chance.paragraph();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private _is_active: PropOrFactory<boolean> = (_index) => true;
-  // auto generated in entity
-  private _created_at: PropOrFactory<Date> | undefined = undefined;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private _created_at: PropOrFactory<Date> = (_index) => new Date();
 
-  private countObjs;
+  private countObjs: number;
 
   static aCategory() {
     return new CategoryFakeBuilder<Category>();
@@ -74,9 +74,7 @@ export class CategoryFakeBuilder<TBuild = any> {
         name: this.callFactory(this._name, index),
         description: this.callFactory(this._description, index),
         is_active: this.callFactory(this._is_active, index),
-        ...(this._created_at && {
-          created_at: this.callFactory(this._created_at, index),
-        }),
+        created_at: this.callFactory(this._created_at, index),
       });
       category.validate();
       return category;

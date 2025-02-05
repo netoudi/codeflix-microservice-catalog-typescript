@@ -6,12 +6,14 @@ describe('CategoryFakerBuilder Unit Tests', () => {
   describe('category_id prop', () => {
     const faker = CategoryFakeBuilder.aCategory();
 
-    test('should throw error when any with methods has called', () => {
-      expect(() => faker.category_id).toThrow(new Error("Property category_id not have a factory, use 'with' methods"));
+    test('should be a function', () => {
+      expect(typeof faker['_category_id']).toBe('function');
     });
 
-    test('should be undefined', () => {
-      expect(faker['_category_id']).toBeUndefined();
+    test('should return a CategoryId instance', () => {
+      //@ts-expect-error _category_id is a callable
+      const category_id = faker['_category_id']();
+      expect(category_id).toBeInstanceOf(CategoryId);
     });
 
     test('withCategoryId', () => {
@@ -27,7 +29,6 @@ describe('CategoryFakerBuilder Unit Tests', () => {
       expect(faker.category_id).toBe(category_id);
     });
 
-    //TODO: - melhorar este nome
     test('should pass index to category_id factory', () => {
       let mockFactory = jest.fn(() => new CategoryId());
       faker.withCategoryId(mockFactory);
@@ -162,15 +163,14 @@ describe('CategoryFakerBuilder Unit Tests', () => {
   describe('created_at prop', () => {
     const faker = CategoryFakeBuilder.aCategory();
 
-    test('should throw error when any with methods has called', () => {
-      const fakerCategory = CategoryFakeBuilder.aCategory();
-      expect(() => fakerCategory.created_at).toThrow(
-        new Error("Property created_at not have a factory, use 'with' methods"),
-      );
+    test('should be a function', () => {
+      expect(typeof faker['_created_at']).toBe('function');
     });
 
-    test('should be undefined', () => {
-      expect(faker['_created_at']).toBeUndefined();
+    test('should return a Date instance', () => {
+      //@ts-expect-error _created_at is a callable
+      const created_at = faker['_created_at']();
+      expect(created_at).toBeInstanceOf(Date);
     });
 
     test('withCreatedAt', () => {

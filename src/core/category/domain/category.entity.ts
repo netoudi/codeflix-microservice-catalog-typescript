@@ -5,18 +5,19 @@ import { ValueObject } from '@/core/shared/domain/value-object';
 import { Uuid } from '@/core/shared/domain/value-objects/uuid.vo';
 
 export type CategoryConstructor = {
-  id?: CategoryId;
+  id: CategoryId;
   name: string;
-  description?: string | null;
-  is_active?: boolean;
-  created_at?: Date;
+  description: string | null;
+  is_active: boolean;
+  created_at: Date;
 };
 
 export type CategoryCreateCommand = {
+  id: CategoryId;
   name: string;
-  description?: string | null;
-  is_active?: boolean;
-  created_at?: Date;
+  description: string | null;
+  is_active: boolean;
+  created_at: Date;
 };
 
 export class CategoryId extends Uuid {}
@@ -54,6 +55,10 @@ export class Category extends AggregateRoot {
 
   changeDescription(description: string | null): void {
     this.description = description;
+  }
+
+  changeCreatedAt(created_at: Date): void {
+    this.created_at = created_at;
   }
 
   activate(): void {

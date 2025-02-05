@@ -14,7 +14,7 @@ describe('UpdateCategoryUseCase Unit Tests', () => {
   });
 
   it('should throw error when category is not valid', async () => {
-    const category = new Category({ name: 'Movie' });
+    const category = Category.fake().aCategory().build();
     repository.items = [category];
     const input = { id: category.id.value, name: 'x'.repeat(256) };
     await expect(useCase.execute(input)).rejects.toThrow('Entity Validation Error');
@@ -30,7 +30,7 @@ describe('UpdateCategoryUseCase Unit Tests', () => {
 
   it('should update a category', async () => {
     const spyInsert = jest.spyOn(repository, 'update');
-    const category = new Category({ name: 'Movie' });
+    const category = Category.fake().aCategory().withDescription(null).build();
     repository.items = [category];
     const output = await useCase.execute({ id: category.id.value, name: 'test' });
     expect(spyInsert).toHaveBeenCalledTimes(1);
