@@ -1,0 +1,28 @@
+services:
+  app:
+    build: .
+    container_name: codeflix-catalog-backend
+    command: .docker/app/start.sh
+    ports:
+      - "4444:4444"
+    volumes:
+      - .:/home/node/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  db:
+    image: mysql:8.0.39-debian
+    container_name: codeflix-catalog-db
+    restart: always
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - ./.docker/dbdata:/var/lib/mysql:delegated
+      - ./.docker/mysql:/docker-entrypoint-initdb.d
+    security_opt:
+      - seccomp:unconfined
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
