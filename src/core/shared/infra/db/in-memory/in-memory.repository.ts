@@ -1,3 +1,4 @@
+import { AggregateRoot } from '@/core/shared/domain/aggregate-root';
 import { Entity } from '@/core/shared/domain/entity';
 import { InvalidArgumentError } from '@/core/shared/domain/errors/invalid-argument.error';
 import { NotFoundError } from '@/core/shared/domain/errors/not-found';
@@ -6,22 +7,23 @@ import { SearchParams, SortDirection } from '@/core/shared/domain/repository/sea
 import { SearchResult } from '@/core/shared/domain/repository/search-result';
 import { ValueObject } from '@/core/shared/domain/value-object';
 
-export abstract class InMemoryRepository<E extends Entity, EntityId extends ValueObject>
+export abstract class InMemoryRepository<E extends AggregateRoot, EntityId extends ValueObject>
   implements IRepository<E, EntityId>
 {
+  public sortableFields: string[];
   public items: E[] = [];
 
   async insert(entity: E): Promise<void> {
-    this.items.push(entity);
+    this.items.push(this.clone(entity));
   }
 
   async bulkInsert(entities: E[]): Promise<void> {
-    this.items.push(...entities);
+    this.items.push(...entities.map((entity) => this.clone(entity)));
   }
 
   async update(entity: E): Promise<void> {
     const indexFound = this.findIndexOrFail(entity);
-    this.items[indexFound] = entity;
+    this.items[indexFound] = this.clone(entity);
   }
 
   async delete(entityId: EntityId): Promise<void> {
@@ -30,18 +32,46 @@ export abstract class InMemoryRepository<E extends Entity, EntityId extends Valu
   }
 
   async findById(entityId: EntityId): Promise<E | null> {
-    return this.items.find((item) => item.entityId.equals(entityId)) ?? null;
+    const entity = this.items.find((item) => item.entityId.equals(entityId));
+    return entity ? this.clone(entity) : null;
+  }
+
+  async findOneBy(filter: Partial<E>): Promise<E | null> {
+    const entity = this.items.find((item) => {
+      return Object.entries(filter).every(([key, value]) => {
+        return value instanceof ValueObject ? item[key].equals(value) : item[key] === value;
+      });
+    });
+    return entity ? this.clone(entity) : null;
+  }
+
+  async findBy(filter: Partial<E>, order?: { field: string; direction: SortDirection }): Promise<E[]> {
+    let items = this.items.filter((entity) => {
+      return Object.entries(filter).every(([key, value]) => {
+        return value instanceof ValueObject ? entity[key].equals(value) : entity[key] === value;
+      });
+    });
+    if (order) {
+      items = items.sort((a, b) => {
+        const aValue = a[order.field];
+        const bValue = b[order.field];
+        if (aValue < bValue) return order.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return order.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return items.map(this.clone);
   }
 
   async findAll(): Promise<E[]> {
-    return this.items;
+    return this.items.map(this.clone);
   }
 
-  async findByIds(ids: EntityId[]): Promise<E[]> {
+  async findByIds(ids: EntityId[]): Promise<{ exists: E[]; not_exists: EntityId[] }> {
     //avoid to return repeated items
-    return this.items.filter((entity) => {
-      return ids.some((id) => entity.entityId.equals(id));
-    });
+    const foundItems = this.items.filter((entity) => ids.some((id) => entity.entityId.equals(id)));
+    const notFoundIds = ids.filter((id) => !foundItems.some((entity) => entity.entityId.equals(id)));
+    return { exists: foundItems.map(this.clone), not_exists: notFoundIds };
   }
 
   async existsById(ids: EntityId[]): Promise<{ exists: EntityId[]; not_exists: EntityId[] }> {
@@ -71,6 +101,10 @@ export abstract class InMemoryRepository<E extends Entity, EntityId extends Valu
     const indexFound = this.items.findIndex((item) => item.entityId.equals(entityId));
     if (indexFound < 0) throw new NotFoundError(entityId, this.getEntity());
     return indexFound;
+  }
+
+  private clone(obj: E): E {
+    return Object.assign(Object.create(Object.getPrototypeOf(obj)), obj);
   }
 
   abstract getEntity(): new (...args: any[]) => E;
