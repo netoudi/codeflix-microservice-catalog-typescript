@@ -11,7 +11,7 @@ export class ListCategoriesUseCase implements IUseCase<ListCategoriesInput, List
   constructor(private readonly categoryRepository: ICategoryRepository) {}
 
   async execute(input: ListCategoriesInput): Promise<ListCategoriesOutput> {
-    const result = await this.categoryRepository.search(new CategorySearchParams(input));
+    const result = await this.categoryRepository.search(CategorySearchParams.create(input));
 
     return CategoryOutputMapper.toPagination(result);
   }

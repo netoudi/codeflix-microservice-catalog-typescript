@@ -4,7 +4,7 @@ import { SortDirection } from '@/core/shared/domain/repository/search-params';
 import { InMemorySearchableRepository } from '@/core/shared/infra/db/in-memory/in-memory.repository';
 
 export class CategoryInMemoryRepository
-  extends InMemorySearchableRepository<Category, CategoryId>
+  extends InMemorySearchableRepository<Category, CategoryId, CategoryFilter>
   implements ICategoryRepository
 {
   sortableFields: string[] = ['name', 'created_at'];
@@ -12,7 +12,7 @@ export class CategoryInMemoryRepository
   protected async applyFilter(items: Category[], filter: CategoryFilter | null): Promise<Category[]> {
     if (!filter) return items;
     return items.filter((i) => {
-      return i.name.toLowerCase().includes(filter.toLowerCase());
+      return i.name.toLowerCase().includes(filter.name!.toLowerCase());
     });
   }
 

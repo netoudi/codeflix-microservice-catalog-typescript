@@ -45,7 +45,9 @@ describe('ListCategoriesUseCase Unit Tests', () => {
       page: 1,
       per_page: 2,
       sort: 'name',
-      filter: 'a',
+      filter: {
+        name: 'a',
+      },
     });
     expect(output).toStrictEqual({
       items: [items[1], items[2]].map(CategoryOutputMapper.toOutput),
@@ -58,7 +60,9 @@ describe('ListCategoriesUseCase Unit Tests', () => {
       page: 2,
       per_page: 2,
       sort: 'name',
-      filter: 'a',
+      filter: {
+        name: 'a',
+      },
     });
     expect(output).toStrictEqual({
       items: [items[0]].map(CategoryOutputMapper.toOutput),
@@ -72,7 +76,9 @@ describe('ListCategoriesUseCase Unit Tests', () => {
       per_page: 2,
       sort: 'name',
       sort_dir: 'desc',
-      filter: 'a',
+      filter: {
+        name: 'a',
+      },
     });
     expect(output).toStrictEqual({
       items: [items[0], items[2]].map(CategoryOutputMapper.toOutput),

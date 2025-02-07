@@ -25,7 +25,7 @@ describe('CategoryInMemoryRepository Unit Tests', () => {
 
     const spyFilter = jest.spyOn(items, 'filter');
 
-    const itemsFiltered = await repository['applyFilter'](items, 'TEST');
+    const itemsFiltered = await repository['applyFilter'](items, { name: 'TEST' });
     expect(spyFilter).toHaveBeenCalledTimes(1);
     expect(itemsFiltered).toStrictEqual([items[0], items[1]]);
   });
