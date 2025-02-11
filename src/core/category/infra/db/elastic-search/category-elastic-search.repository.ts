@@ -5,6 +5,7 @@ import {
   CategorySearchResult,
   ICategoryRepository,
 } from '@/core/category/domain/category.repository';
+import { CategoryElasticSearchMapper } from '@/core/category/infra/db/elastic-search/category-elastic-search.mapper';
 import { SortDirection } from '@/core/shared/domain/repository/search-params';
 
 export class CategoryElasticSearchRepository implements ICategoryRepository {
@@ -20,11 +21,23 @@ export class CategoryElasticSearchRepository implements ICategoryRepository {
   }
 
   async insert(entity: Category): Promise<void> {
-    throw new Error('Method not implemented.');
+    await this.esClient.index({
+      index: this.index,
+      id: entity.id.value,
+      body: CategoryElasticSearchMapper.toDocument(entity),
+      refresh: true,
+    });
   }
 
   async bulkInsert(entities: Category[]): Promise<void> {
-    throw new Error('Method not implemented.');
+    await this.esClient.bulk({
+      index: this.index,
+      body: entities.flatMap((entity) => [
+        { index: { _id: entity.id.value } },
+        CategoryElasticSearchMapper.toDocument(entity),
+      ]),
+      refresh: true,
+    });
   }
 
   async update(entity: Category): Promise<void> {
