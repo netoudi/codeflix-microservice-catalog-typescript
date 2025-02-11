@@ -5,6 +5,7 @@ import {
   CategoryElasticSearchMapper,
 } from '@/core/category/infra/db/elastic-search/category-elastic-search.mapper';
 import { CategoryElasticSearchRepository } from '@/core/category/infra/db/elastic-search/category-elastic-search.repository';
+import { esMapping } from '@/core/shared/infra/db/elastic-search/es-mapping';
 
 describe('CategoryElasticSearchRepository Integration Tests', () => {
   const esClient = new ElasticsearchService({ node: 'http://host.docker.internal:9200' });
@@ -12,6 +13,7 @@ describe('CategoryElasticSearchRepository Integration Tests', () => {
 
   beforeEach(async () => {
     await esClient.indices.create({ index: CATEGORY_DOCUMENT_TYPE_NAME });
+    await esClient.indices.putMapping({ index: CATEGORY_DOCUMENT_TYPE_NAME, body: esMapping });
     repository = new CategoryElasticSearchRepository(esClient, CATEGORY_DOCUMENT_TYPE_NAME);
   });
 
