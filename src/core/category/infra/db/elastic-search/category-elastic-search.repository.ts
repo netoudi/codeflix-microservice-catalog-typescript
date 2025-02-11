@@ -205,7 +205,32 @@ export class CategoryElasticSearchRepository implements ICategoryRepository {
   }
 
   async existsById(ids: CategoryId[]): Promise<{ exists: CategoryId[]; not_exists: CategoryId[] }> {
-    throw new Error('Method not implemented.');
+    const result = await this.esClient.search({
+      index: this.index,
+      _source: false as any,
+      body: {
+        query: {
+          bool: {
+            must: [
+              {
+                ids: {
+                  values: ids.map((id) => id.value),
+                },
+              },
+              {
+                match: {
+                  type: CATEGORY_DOCUMENT_TYPE_NAME,
+                },
+              },
+            ],
+          },
+        },
+      },
+    });
+    const docs = result.body.hits.hits as GetGetResult<CategoryDocument>[];
+    const existsIds = docs.map((doc) => new CategoryId(doc._id as string));
+    const notExistsIds = ids.filter((id) => !existsIds.some((existsId) => existsId.equals(id)));
+    return { exists: existsIds, not_exists: notExistsIds };
   }
   getEntity(): new (...args: any[]) => Category {
     throw new Error('Method not implemented.');
