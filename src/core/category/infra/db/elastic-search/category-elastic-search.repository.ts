@@ -11,6 +11,7 @@ import {
   CategoryDocument,
   CategoryElasticSearchMapper,
 } from '@/core/category/infra/db/elastic-search/category-elastic-search.mapper';
+import { NotFoundError } from '@/core/shared/domain/errors/not-found';
 import { SortDirection } from '@/core/shared/domain/repository/search-params';
 
 export class CategoryElasticSearchRepository implements ICategoryRepository {
@@ -22,6 +23,7 @@ export class CategoryElasticSearchRepository implements ICategoryRepository {
     private index: string,
   ) {}
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async search(props: CategorySearchParams): Promise<CategorySearchResult> {
     throw new Error('Method not implemented.');
   }
@@ -47,11 +49,40 @@ export class CategoryElasticSearchRepository implements ICategoryRepository {
   }
 
   async update(entity: Category): Promise<void> {
-    throw new Error('Method not implemented.');
+    const result = await this.esClient.updateByQuery({
+      index: this.index,
+      body: {
+        query: {
+          match: {
+            _id: entity.id.value,
+          },
+        },
+        script: {
+          source: `
+            ctx._source.category_name = params.category_name;
+            ctx._source.category_description = params.category_description;
+            ctx._source.is_active = params.is_active;
+            ctx._source.created_at = params.created_at;
+          `,
+          params: CategoryElasticSearchMapper.toDocument(entity),
+        },
+      },
+      refresh: true,
+    });
+    if (result.body.updated !== 1) {
+      throw new NotFoundError(entity.id.value, Category);
+    }
   }
 
   async delete(entityId: CategoryId): Promise<void> {
-    throw new Error('Method not implemented.');
+    const result = await this.esClient.delete({
+      index: this.index,
+      id: entityId.value,
+      refresh: true,
+    });
+    if (result.body.result !== 'deleted') {
+      throw new NotFoundError(entityId.value, Category);
+    }
   }
 
   async findById(entityId: CategoryId): Promise<Category | null> {
@@ -233,6 +264,6 @@ export class CategoryElasticSearchRepository implements ICategoryRepository {
     return { exists: existsIds, not_exists: notExistsIds };
   }
   getEntity(): new (...args: any[]) => Category {
-    throw new Error('Method not implemented.');
+    return Category;
   }
 }

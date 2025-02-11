@@ -5,6 +5,7 @@ import {
   CategoryElasticSearchMapper,
 } from '@/core/category/infra/db/elastic-search/category-elastic-search.mapper';
 import { CategoryElasticSearchRepository } from '@/core/category/infra/db/elastic-search/category-elastic-search.repository';
+import { NotFoundError } from '@/core/shared/domain/errors/not-found';
 import { esMapping } from '@/core/shared/infra/db/elastic-search/es-mapping';
 
 describe('CategoryElasticSearchRepository Integration Tests', () => {
@@ -131,5 +132,32 @@ describe('CategoryElasticSearchRepository Integration Tests', () => {
     expect(existsResult2.not_exists).toHaveLength(1);
     expect(existsResult2.exists[0]).toBeValueObject(category.id);
     expect(existsResult2.not_exists[0]).toBeValueObject(categoryId1);
+  });
+
+  it('should throw error on update when a entity not found', async () => {
+    const category = Category.fake().aCategory().build();
+    await expect(repository.update(category)).rejects.toThrow(new NotFoundError(category.id.value, Category));
+  });
+
+  it('should update a entity', async () => {
+    const category = Category.fake().aCategory().build();
+    await repository.insert(category);
+    category.changeName('Movie updated');
+    await repository.update(category);
+    const output = await repository.findById(category.id);
+    expect(output?.toJSON()).toStrictEqual(category.toJSON());
+  });
+
+  it('should delete a entity', async () => {
+    const category = new Category({
+      id: new CategoryId(),
+      name: 'Movie',
+      description: 'Some description',
+      is_active: false,
+      created_at: new Date(),
+    });
+    await repository.insert(category);
+    await repository.delete(category.id);
+    await expect(repository.findById(category.id)).resolves.toBeNull();
   });
 });
