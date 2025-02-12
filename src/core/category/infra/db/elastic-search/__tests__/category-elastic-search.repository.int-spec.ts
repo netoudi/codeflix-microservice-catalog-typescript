@@ -1,15 +1,9 @@
-import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { Category, CategoryId } from '@/core/category/domain/category.entity';
-import {
-  CATEGORY_DOCUMENT_TYPE_NAME,
-  CategoryElasticSearchMapper,
-} from '@/core/category/infra/db/elastic-search/category-elastic-search.mapper';
 import { CategoryElasticSearchRepository } from '@/core/category/infra/db/elastic-search/category-elastic-search.repository';
 import { NotFoundError } from '@/core/shared/domain/errors/not-found';
 import { setupElasticsearch } from '@/core/shared/infra/testing/global-helpers';
 
 describe('CategoryElasticSearchRepository Integration Tests', () => {
-  let esClient: ElasticsearchService;
   let repository: CategoryElasticSearchRepository;
 
   const esHelper = setupElasticsearch();

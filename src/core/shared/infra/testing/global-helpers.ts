@@ -13,7 +13,7 @@ export function setupElasticsearch() {
   let _indexName: string;
 
   beforeAll(async () => {
-    const esContainer = new ElasticsearchContainer('elasticsearch:7.17.7');
+    const esContainer = new ElasticsearchContainer('elasticsearch:7.17.7').withReuse();
     _startedContainer = await esContainer.start();
   }, 120_000);
 
