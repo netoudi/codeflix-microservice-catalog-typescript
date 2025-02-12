@@ -1,4 +1,5 @@
 import { ElasticsearchService } from '@nestjs/elasticsearch';
+import { ElasticsearchContainer, StartedElasticsearchContainer } from '@testcontainers/elasticsearch';
 import { Category, CategoryId } from '@/core/category/domain/category.entity';
 import {
   CATEGORY_DOCUMENT_TYPE_NAME,
@@ -9,17 +10,22 @@ import { NotFoundError } from '@/core/shared/domain/errors/not-found';
 import { esMapping } from '@/core/shared/infra/db/elastic-search/es-mapping';
 
 describe('CategoryElasticSearchRepository Integration Tests', () => {
-  const esClient = new ElasticsearchService({ node: 'http://host.docker.internal:9200' });
+  let esClient: ElasticsearchService;
+  let startedContainer: StartedElasticsearchContainer;
   let repository: CategoryElasticSearchRepository;
 
   beforeEach(async () => {
+    const esContainer = new ElasticsearchContainer('elasticsearch:7.17.7');
+    startedContainer = await esContainer.start();
+    esClient = new ElasticsearchService({ node: startedContainer.getHttpUrl() });
     await esClient.indices.create({ index: CATEGORY_DOCUMENT_TYPE_NAME });
     await esClient.indices.putMapping({ index: CATEGORY_DOCUMENT_TYPE_NAME, body: esMapping });
     repository = new CategoryElasticSearchRepository(esClient, CATEGORY_DOCUMENT_TYPE_NAME);
-  });
+  }, 60000);
 
   afterEach(async () => {
     await esClient.indices.delete({ index: CATEGORY_DOCUMENT_TYPE_NAME });
+    await startedContainer.stop();
   });
 
   it('should insert a new entity', async () => {
