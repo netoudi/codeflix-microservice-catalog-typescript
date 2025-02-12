@@ -43,6 +43,7 @@
     "@swc/jest": "^0.2.37",
     "@testcontainers/elasticsearch": "^10.18.0",
     "@types/chance": "^1.1.6",
+    "@types/debug": "^4.1.12",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.2",
     "@types/node": "^20.3.1",
