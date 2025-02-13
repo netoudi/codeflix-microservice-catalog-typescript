@@ -7,23 +7,11 @@ services:
       - "4444:4444"
     volumes:
       - .:/home/node/app
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ~/.docker/config.json:/home/node/.docker/config.json:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
-
-  db:
-    image: mysql:8.0.39-debian
-    container_name: codeflix-catalog-db
-    restart: always
+    stop_signal: SIGKILL
+    stdin_open: true
     tty: true
-    ports:
-      - "3306:3306"
-    environment:
-      - MYSQL_ROOT_PASSWORD=root
-    volumes:
-      - ./.docker/mysql:/docker-entrypoint-initdb.d
-    tmpfs:
-      - /var/lib/mysql
-    security_opt:
-      - seccomp:unconfined
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    privileged: true
