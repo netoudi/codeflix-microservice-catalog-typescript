@@ -27,6 +27,7 @@ describe('ListAllCategoriesUseCase Integration Tests', () => {
       description: category1.description,
       is_active: category1.is_active,
       created_at: category1.created_at,
+      deleted_at: null,
     });
     expect(output).toContainEqual({
       id: category2.id.value,
@@ -34,6 +35,7 @@ describe('ListAllCategoriesUseCase Integration Tests', () => {
       description: category2.description,
       is_active: category2.is_active,
       created_at: category2.created_at,
+      deleted_at: null,
     });
   });
 });

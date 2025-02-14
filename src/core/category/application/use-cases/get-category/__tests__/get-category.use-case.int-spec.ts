@@ -32,6 +32,7 @@ describe('GetCategoryUseCase Integration Tests', () => {
       description: category.description,
       is_active: category.is_active,
       created_at: category.created_at,
+      deleted_at: null,
     });
   });
 });

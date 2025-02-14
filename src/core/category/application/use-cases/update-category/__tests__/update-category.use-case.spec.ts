@@ -40,6 +40,7 @@ describe('UpdateCategoryUseCase Unit Tests', () => {
       description: null,
       is_active: true,
       created_at: category.created_at,
+      deleted_at: null,
     });
     type Arrange = {
       input: {
@@ -54,6 +55,7 @@ describe('UpdateCategoryUseCase Unit Tests', () => {
         description: string | null;
         is_active: boolean;
         created_at: Date;
+        deleted_at: Date | null;
       };
     };
     const arrange: Arrange[] = [
@@ -69,6 +71,7 @@ describe('UpdateCategoryUseCase Unit Tests', () => {
           description: 'some description',
           is_active: true,
           created_at: category.created_at,
+          deleted_at: null,
         },
       },
       {
@@ -82,6 +85,7 @@ describe('UpdateCategoryUseCase Unit Tests', () => {
           description: 'some description',
           is_active: true,
           created_at: category.created_at,
+          deleted_at: null,
         },
       },
       {
@@ -96,6 +100,7 @@ describe('UpdateCategoryUseCase Unit Tests', () => {
           description: 'some description',
           is_active: false,
           created_at: category.created_at,
+          deleted_at: null,
         },
       },
       {
@@ -109,6 +114,7 @@ describe('UpdateCategoryUseCase Unit Tests', () => {
           description: 'some description',
           is_active: false,
           created_at: category.created_at,
+          deleted_at: null,
         },
       },
       {
@@ -123,6 +129,7 @@ describe('UpdateCategoryUseCase Unit Tests', () => {
           description: 'some description',
           is_active: true,
           created_at: category.created_at,
+          deleted_at: null,
         },
       },
       {
@@ -138,6 +145,7 @@ describe('UpdateCategoryUseCase Unit Tests', () => {
           description: 'some description',
           is_active: false,
           created_at: category.created_at,
+          deleted_at: null,
         },
       },
       {
@@ -151,6 +159,7 @@ describe('UpdateCategoryUseCase Unit Tests', () => {
           description: null,
           is_active: false,
           created_at: category.created_at,
+          deleted_at: null,
         },
       },
     ];

@@ -39,6 +39,7 @@ describe('CreateCategoryUseCase Unit Tests', () => {
       description: null,
       is_active: true,
       created_at: repository.items[0].created_at,
+      deleted_at: null,
     });
     output = await useCase.execute({
       id: new CategoryId(),
@@ -54,6 +55,7 @@ describe('CreateCategoryUseCase Unit Tests', () => {
       description: 'some description',
       is_active: false,
       created_at: repository.items[1].created_at,
+      deleted_at: null,
     });
   });
 });
