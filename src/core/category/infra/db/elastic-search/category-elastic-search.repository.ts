@@ -63,6 +63,7 @@ export class CategoryElasticSearchRepository implements ICategoryRepository {
             ctx._source.category_description = params.category_description;
             ctx._source.is_active = params.is_active;
             ctx._source.created_at = params.created_at;
+            ctx._source.deleted_at = params.deleted_at;
           `,
           params: CategoryElasticSearchMapper.toDocument(entity),
         },

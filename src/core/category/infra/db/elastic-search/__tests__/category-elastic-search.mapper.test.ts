@@ -15,6 +15,7 @@ describe('CategoryElasticSearchMapper Unit Tests', () => {
       category_description: 'Test description',
       is_active: true,
       created_at: new Date(),
+      deleted_at: null,
       type: CATEGORY_DOCUMENT_TYPE_NAME,
     };
     const id = new CategoryId();
@@ -31,6 +32,10 @@ describe('CategoryElasticSearchMapper Unit Tests', () => {
     it('should convert document to entity', () => {
       const result = CategoryElasticSearchMapper.toEntity(category.id.value, categoryDocument);
       expect(result).toEqual(category);
+      categoryDocument.deleted_at = new Date();
+      category.deleted_at = categoryDocument.deleted_at;
+      const result2 = CategoryElasticSearchMapper.toEntity(category.id.value, categoryDocument);
+      expect(result2).toEqual(category);
     });
   });
 
@@ -38,6 +43,10 @@ describe('CategoryElasticSearchMapper Unit Tests', () => {
     it('should convert entity to document', () => {
       const result = CategoryElasticSearchMapper.toDocument(category);
       expect(result).toEqual(categoryDocument);
+      category.deleted_at = new Date();
+      categoryDocument.deleted_at = category.deleted_at;
+      const result2 = CategoryElasticSearchMapper.toDocument(category);
+      expect(result2).toEqual(categoryDocument);
     });
   });
 });

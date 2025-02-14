@@ -8,6 +8,7 @@ export type CategoryDocument = {
   category_description: string | null;
   is_active: boolean;
   created_at: Date | string;
+  deleted_at: Date | string | null;
   type: typeof CATEGORY_DOCUMENT_TYPE_NAME;
 };
 
@@ -22,6 +23,12 @@ export class CategoryElasticSearchMapper {
       description: document.category_description,
       is_active: document.is_active,
       created_at: !(document.created_at instanceof Date) ? new Date(document.created_at) : document.created_at,
+      deleted_at:
+        document.deleted_at === null
+          ? null
+          : !(document.deleted_at instanceof Date)
+            ? new Date(document.deleted_at)
+            : document.deleted_at,
     });
     category.validate();
     if (category.notification.hasErrors()) {
@@ -36,6 +43,7 @@ export class CategoryElasticSearchMapper {
       category_description: category.description,
       is_active: category.is_active,
       created_at: category.created_at,
+      deleted_at: category.deleted_at,
       type: CATEGORY_DOCUMENT_TYPE_NAME,
     };
   }
