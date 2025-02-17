@@ -85,7 +85,7 @@ async function main() {
   const esClient = new ElasticsearchService({
     node: `http://${startedContainer.getHost()}:${startedContainer.getMappedPort(9200)}`,
   });
-  // await esClient.indices.delete({ index: 'categories' });
+  await esClient.indices.delete({ index: 'categories' });
   await esClient.indices.create({
     index: 'categories',
     body: {
@@ -99,19 +99,16 @@ async function main() {
   const category4 = Category.fake().aCategory().withName('Category 4').build();
   await repository.bulkInsert([category1, category2, category3, category4]);
   const findByNameCriteria = new FindByNameCriteria('Category 2');
-  //@ts-expect-error
   let result = await repository.searchByCriteria([findByNameCriteria]);
   console.log(result);
   const findByDescriptionCriteria = new FindByDescriptionCriteria('Description 4');
 
   let byNameAndDescription = new AndCriteria([findByNameCriteria, findByDescriptionCriteria]);
-  //@ts-expect-error
   result = await repository.searchByCriteria([byNameAndDescription]);
   console.log(result);
 
   byNameAndDescription = new AndCriteria([findByNameCriteria, new FindByDescriptionCriteria(category2.description!)]);
 
-  //@ts-expect-error
   result = await repository.searchByCriteria([byNameAndDescription]);
   console.log(result);
 }

@@ -2,6 +2,7 @@ import { AggregateRoot } from '@/core/shared/domain/aggregate-root';
 import { Entity } from '@/core/shared/domain/entity';
 import { InvalidArgumentError } from '@/core/shared/domain/errors/invalid-argument.error';
 import { NotFoundError } from '@/core/shared/domain/errors/not-found';
+import { ICriteria } from '@/core/shared/domain/repository/criteria.interface';
 import { IRepository, ISearchableRepository } from '@/core/shared/domain/repository/repository-interface';
 import { SearchParams, SortDirection } from '@/core/shared/domain/repository/search-params';
 import { SearchResult } from '@/core/shared/domain/repository/search-result';
@@ -128,6 +129,11 @@ export abstract class InMemorySearchableRepository<E extends Entity, EntityId ex
         per_page: props.per_page,
       }),
     );
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  searchByCriteria(criterias: ICriteria[]): Promise<SearchResult<E>> {
+    throw new Error('Method not implemented.');
   }
 
   protected applySort(

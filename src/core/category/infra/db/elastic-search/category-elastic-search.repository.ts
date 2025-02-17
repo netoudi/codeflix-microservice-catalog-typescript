@@ -12,6 +12,7 @@ import {
   CategoryElasticSearchMapper,
 } from '@/core/category/infra/db/elastic-search/category-elastic-search.mapper';
 import { NotFoundError } from '@/core/shared/domain/errors/not-found';
+import { ICriteria } from '@/core/shared/domain/repository/criteria.interface';
 import { SortDirection } from '@/core/shared/domain/repository/search-params';
 
 export class CategoryElasticSearchRepository implements ICategoryRepository {
@@ -26,6 +27,24 @@ export class CategoryElasticSearchRepository implements ICategoryRepository {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async search(props: CategorySearchParams): Promise<CategorySearchResult> {
     throw new Error('Method not implemented.');
+  }
+
+  async searchByCriteria(criterias: ICriteria[]): Promise<CategorySearchResult> {
+    let query: QueryDslQueryContainer = {};
+    for (const criteria of criterias) {
+      query = criteria.applyCriteria(query);
+    }
+    const result = await this.esClient.search({
+      body: {
+        query,
+      },
+    });
+    return new CategorySearchResult({
+      total: result.body.hits.total.value,
+      current_page: 1,
+      per_page: 15,
+      items: result.body.hits.hits.map((hit: any) => CategoryElasticSearchMapper.toEntity(hit._id, hit._source)),
+    });
   }
 
   async insert(entity: Category): Promise<void> {

@@ -1,5 +1,5 @@
 import { AggregateRoot } from '@/core/shared/domain/aggregate-root';
-import { Entity } from '@/core/shared/domain/entity';
+import { ICriteria } from '@/core/shared/domain/repository/criteria.interface';
 import { SearchParams, SortDirection } from '@/core/shared/domain/repository/search-params';
 import { SearchResult } from '@/core/shared/domain/repository/search-result';
 import { ValueObject } from '@/core/shared/domain/value-object';
@@ -20,12 +20,13 @@ export interface IRepository<E extends AggregateRoot, EntityId extends ValueObje
 }
 
 export interface ISearchableRepository<
-  E extends Entity,
-  EntityId extends ValueObject,
+  A extends AggregateRoot,
+  AggregateId extends ValueObject,
   Filter = string,
   SearchInput = SearchParams<Filter>,
-  SearchOutput = SearchResult,
-> extends IRepository<E, EntityId> {
+  SearchOutput = SearchResult<A>,
+> extends IRepository<A, AggregateId> {
   sortableFields: string[];
   search(props: SearchInput): Promise<SearchOutput>;
+  searchByCriteria(criterias: ICriteria[]): Promise<SearchOutput>;
 }
