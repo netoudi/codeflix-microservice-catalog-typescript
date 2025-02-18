@@ -10,6 +10,7 @@ export type CategoryConstructor = {
   description: string | null;
   is_active: boolean;
   created_at: Date;
+  deleted_at?: Date | null;
 };
 
 export type CategoryCreateCommand = {
@@ -18,6 +19,7 @@ export type CategoryCreateCommand = {
   description: string | null;
   is_active: boolean;
   created_at: Date;
+  deleted_at?: Date | null;
 };
 
 export class CategoryId extends Uuid {}
@@ -28,14 +30,16 @@ export class Category extends AggregateRoot {
   description: string | null;
   is_active: boolean;
   created_at: Date;
+  deleted_at: Date | null;
 
   constructor(props: CategoryConstructor) {
     super();
-    this.id = props.id ?? new CategoryId();
+    this.id = props.id;
     this.name = props.name;
     this.description = props.description ?? null;
-    this.is_active = props.is_active ?? true;
-    this.created_at = props.created_at ?? new Date();
+    this.is_active = props.is_active;
+    this.created_at = props.created_at;
+    this.deleted_at = props.deleted_at ?? null;
   }
 
   get entityId(): ValueObject {
@@ -59,6 +63,14 @@ export class Category extends AggregateRoot {
 
   changeCreatedAt(created_at: Date): void {
     this.created_at = created_at;
+  }
+
+  markAsDeleted(): void {
+    this.deleted_at = new Date();
+  }
+
+  markAsNotDeleted(): void {
+    this.deleted_at = null;
   }
 
   activate(): void {

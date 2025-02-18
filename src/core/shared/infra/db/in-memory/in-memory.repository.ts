@@ -2,15 +2,18 @@ import { AggregateRoot } from '@/core/shared/domain/aggregate-root';
 import { Entity } from '@/core/shared/domain/entity';
 import { InvalidArgumentError } from '@/core/shared/domain/errors/invalid-argument.error';
 import { NotFoundError } from '@/core/shared/domain/errors/not-found';
+import { ICriteria } from '@/core/shared/domain/repository/criteria.interface';
 import { IRepository, ISearchableRepository } from '@/core/shared/domain/repository/repository-interface';
 import { SearchParams, SortDirection } from '@/core/shared/domain/repository/search-params';
 import { SearchResult } from '@/core/shared/domain/repository/search-result';
 import { ValueObject } from '@/core/shared/domain/value-object';
+import { SoftDeleteInMemoryCriteria } from '@/core/shared/infra/db/in-memory/soft-delete-in-memory.criteria';
 
 export abstract class InMemoryRepository<E extends AggregateRoot, EntityId extends ValueObject>
   implements IRepository<E, EntityId>
 {
   public sortableFields: string[];
+  public scopes: Map<string, ICriteria> = new Map();
   public items: E[] = [];
 
   async insert(entity: E): Promise<void> {
@@ -32,12 +35,12 @@ export abstract class InMemoryRepository<E extends AggregateRoot, EntityId exten
   }
 
   async findById(entityId: EntityId): Promise<E | null> {
-    const entity = this.items.find((item) => item.entityId.equals(entityId));
+    const entity = this.applyScopes(this.items).find((item: E) => item.entityId.equals(entityId));
     return entity ? this.clone(entity) : null;
   }
 
   async findOneBy(filter: Partial<E>): Promise<E | null> {
-    const entity = this.items.find((item) => {
+    const entity = this.applyScopes(this.items).find((item: E) => {
       return Object.entries(filter).every(([key, value]) => {
         return value instanceof ValueObject ? item[key].equals(value) : item[key] === value;
       });
@@ -46,7 +49,7 @@ export abstract class InMemoryRepository<E extends AggregateRoot, EntityId exten
   }
 
   async findBy(filter: Partial<E>, order?: { field: string; direction: SortDirection }): Promise<E[]> {
-    let items = this.items.filter((entity) => {
+    let items = this.applyScopes(this.items).filter((entity: E) => {
       return Object.entries(filter).every(([key, value]) => {
         return value instanceof ValueObject ? entity[key].equals(value) : entity[key] === value;
       });
@@ -64,7 +67,7 @@ export abstract class InMemoryRepository<E extends AggregateRoot, EntityId exten
   }
 
   async findAll(): Promise<E[]> {
-    return this.items.map(this.clone);
+    return this.applyScopes(this.items).map(this.clone);
   }
 
   async findByIds(ids: EntityId[]): Promise<{ exists: E[]; not_exists: EntityId[] }> {
@@ -87,7 +90,7 @@ export abstract class InMemoryRepository<E extends AggregateRoot, EntityId exten
     const existsId = new Set<EntityId>();
     const notExistsId = new Set<EntityId>();
     ids.forEach((id) => {
-      const item = this.items.find((entity) => entity.entityId.equals(id));
+      const item = this.applyScopes(this.items).find((entity: E) => entity.entityId.equals(id));
       item ? existsId.add(id) : notExistsId.add(id);
     });
     return {
@@ -96,9 +99,27 @@ export abstract class InMemoryRepository<E extends AggregateRoot, EntityId exten
     };
   }
 
+  ignoreSoftDeleted(): this {
+    this.scopes.set(SoftDeleteInMemoryCriteria.name, new SoftDeleteInMemoryCriteria());
+    return this;
+  }
+
+  clearScopes(): this {
+    this.scopes.clear();
+    return this;
+  }
+
+  protected applyScopes(context: E[]): any {
+    let items = context;
+    for (const criteria of this.scopes.values()) {
+      items = criteria.applyCriteria(items);
+    }
+    return items;
+  }
+
   private findIndexOrFail(value: E | EntityId): number {
     const entityId = value instanceof Entity ? value.entityId : value;
-    const indexFound = this.items.findIndex((item) => item.entityId.equals(entityId));
+    const indexFound = this.applyScopes(this.items).findIndex((item: E) => item.entityId.equals(entityId));
     if (indexFound < 0) throw new NotFoundError(entityId, this.getEntity());
     return indexFound;
   }
@@ -128,6 +149,11 @@ export abstract class InMemorySearchableRepository<E extends Entity, EntityId ex
         per_page: props.per_page,
       }),
     );
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  searchByCriteria(criterias: ICriteria[]): Promise<SearchResult<E>> {
+    throw new Error('Method not implemented.');
   }
 
   protected applySort(

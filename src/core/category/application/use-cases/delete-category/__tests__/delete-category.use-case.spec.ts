@@ -1,8 +1,7 @@
 import { DeleteCategoryUseCase } from '@/core/category/application/use-cases/delete-category/delete-category.use-case';
-import { Category } from '@/core/category/domain/category.entity';
+import { Category, CategoryId } from '@/core/category/domain/category.entity';
 import { CategoryInMemoryRepository } from '@/core/category/infra/db/in-memory/category-in-memory.repository';
 import { NotFoundError } from '@/core/shared/domain/errors/not-found';
-import { InvalidUuidError, Uuid } from '@/core/shared/domain/value-objects/uuid.vo';
 
 describe('DeleteCategoryUseCase Unit Tests', () => {
   let useCase: DeleteCategoryUseCase;
@@ -14,15 +13,25 @@ describe('DeleteCategoryUseCase Unit Tests', () => {
   });
 
   it('should throw error when entity not found', async () => {
-    await expect(useCase.execute({ id: 'fake-id' })).rejects.toThrow(new InvalidUuidError());
-    const uuid = new Uuid();
-    await expect(useCase.execute({ id: uuid.value })).rejects.toThrow(new NotFoundError(uuid.value, Category));
+    const categoryId = new CategoryId();
+    await expect(() => useCase.execute({ id: categoryId.value })).rejects.toThrow(
+      new NotFoundError(categoryId.value, Category),
+    );
   });
 
   it('should delete a category', async () => {
-    const items = [Category.fake().aCategory().build()];
+    const items = [
+      new Category({
+        id: new CategoryId(),
+        name: 'Movie',
+        description: 'some description',
+        is_active: true,
+        created_at: new Date(),
+      }),
+    ];
     repository.items = items;
     await useCase.execute({ id: items[0].id.value });
-    expect(repository.items).toHaveLength(0);
+    const item = await repository.findById(items[0].id);
+    expect(item?.deleted_at).not.toBeNull();
   });
 });
