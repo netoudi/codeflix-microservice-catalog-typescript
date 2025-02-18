@@ -6,6 +6,7 @@ import { ValueObject } from '@/core/shared/domain/value-object';
 
 export interface IRepository<E extends AggregateRoot, EntityId extends ValueObject> {
   sortableFields: string[];
+  scopes: Map<string, ICriteria>;
   insert(entity: E): Promise<void>;
   bulkInsert(entities: E[]): Promise<void>;
   update(entity: E): Promise<void>;
@@ -16,6 +17,8 @@ export interface IRepository<E extends AggregateRoot, EntityId extends ValueObje
   findAll(): Promise<E[]>;
   findByIds(ids: EntityId[]): Promise<{ exists: E[]; not_exists: EntityId[] }>;
   existsById(ids: EntityId[]): Promise<{ exists: EntityId[]; not_exists: EntityId[] }>;
+  ignoreSoftDeleted(): this;
+  clearScopes(): this;
   getEntity(): new (...args: any[]) => E;
 }
 

@@ -17,5 +17,8 @@ export const esMapping: MappingTypeMapping = {
     created_at: {
       type: 'date',
     },
+    deleted_at: {
+      type: 'date',
+    },
   },
 };

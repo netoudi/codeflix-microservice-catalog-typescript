@@ -9,7 +9,10 @@ export class ListAllCategoriesUseCase implements IUseCase<ListAllCategoriesInput
   constructor(private readonly categoryRepository: ICategoryRepository) {}
 
   async execute(): Promise<ListAllCategoriesOutput> {
-    const categories = await this.categoryRepository.findBy({ is_active: true }, { field: 'name', direction: 'asc' });
+    const categories = await this.categoryRepository
+      .ignoreSoftDeleted()
+      .findBy({ is_active: true }, { field: 'name', direction: 'asc' });
+
     return categories.map(CategoryOutputMapper.toOutput);
   }
 }

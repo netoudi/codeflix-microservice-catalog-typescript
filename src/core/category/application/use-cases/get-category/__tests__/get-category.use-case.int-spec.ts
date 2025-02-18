@@ -20,6 +20,12 @@ describe('GetCategoryUseCase Integration Tests', () => {
     await expect(() => useCase.execute({ id: categoryId.value })).rejects.toThrow(
       new NotFoundError(categoryId.value, Category),
     );
+    const category = Category.fake().aCategory().build();
+    category.markAsDeleted();
+    await repository.insert(category);
+    await expect(() => useCase.execute({ id: category.id.value })).rejects.toThrow(
+      new NotFoundError(category.id.value, Category),
+    );
   });
 
   it('should return a category', async () => {

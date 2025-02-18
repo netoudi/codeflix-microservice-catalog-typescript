@@ -11,7 +11,9 @@ export class GetCategoryUseCase implements IUseCase<GetCategoryInput, GetCategor
   constructor(private readonly categoryRepository: ICategoryRepository) {}
 
   async execute(input: GetCategoryInput): Promise<GetCategoryOutput> {
-    const category = await this.categoryRepository.findOneBy({ id: new CategoryId(input.id), is_active: true });
+    const category = await this.categoryRepository
+      .ignoreSoftDeleted()
+      .findOneBy({ id: new CategoryId(input.id), is_active: true });
 
     if (!category) throw new NotFoundError(input.id, Category);
 
