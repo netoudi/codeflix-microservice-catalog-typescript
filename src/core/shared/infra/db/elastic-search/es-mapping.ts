@@ -11,6 +11,12 @@ export const esMapping: MappingTypeMapping = {
     category_description: {
       type: 'text',
     },
+    cast_member_name: {
+      type: 'keyword',
+    },
+    cast_member_type: {
+      type: 'integer',
+    },
     is_active: {
       type: 'boolean',
     },

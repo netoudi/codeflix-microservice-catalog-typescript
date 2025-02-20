@@ -31,5 +31,5 @@ export interface ISearchableRepository<
 > extends IRepository<A, AggregateId> {
   sortableFields: string[];
   search(props: SearchInput): Promise<SearchOutput>;
-  searchByCriteria(criterias: ICriteria[]): Promise<SearchOutput>;
+  searchByCriteria(criterias: ICriteria[], searchParams: SearchInput): Promise<SearchOutput>;
 }

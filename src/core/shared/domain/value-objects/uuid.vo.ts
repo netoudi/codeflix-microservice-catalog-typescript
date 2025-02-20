@@ -10,6 +10,10 @@ export class Uuid extends ValueObject {
     this.validate();
   }
 
+  get id(): string {
+    return this.value;
+  }
+
   private validate() {
     const isValid = uuidValidate(this.value);
     if (!isValid) {
