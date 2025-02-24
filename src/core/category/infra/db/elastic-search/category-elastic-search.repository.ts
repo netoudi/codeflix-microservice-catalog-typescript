@@ -69,6 +69,121 @@ export class CategoryElasticSearchRepository implements ICategoryRepository {
     });
   }
 
+  async hasOnlyOneActivateInRelated(categoryId: CategoryId): Promise<boolean> {
+    const query: QueryDslQueryContainer = {
+      bool: {
+        must: [
+          {
+            nested: {
+              path: 'categories',
+              query: {
+                bool: {
+                  must: [
+                    {
+                      match: {
+                        'categories.category_id': categoryId.id,
+                      },
+                    },
+                    {
+                      match: {
+                        'categories.is_active': true,
+                      },
+                    },
+                  ],
+                  must_not: [
+                    {
+                      exists: {
+                        field: 'categories.deleted_at',
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        ],
+        filter: {
+          script: {
+            script: {
+              source: `
+                def count = 0;
+                for(item in doc['categories__is_active']) {
+                  if (item == true) {
+                    count = count + 1;
+                  }
+                }
+                return count == 1;
+              `,
+            },
+          },
+        },
+      },
+    };
+    const result = await this.esClient.search({
+      index: this.index,
+      body: {
+        query,
+      },
+      _source: false as any,
+    });
+    return result.body.hits.total.value >= 1;
+  }
+
+  async hasOnlyOneNotDeletedInRelated(categoryId: CategoryId): Promise<boolean> {
+    const query: QueryDslQueryContainer = {
+      bool: {
+        must: [
+          {
+            nested: {
+              path: 'categories',
+              query: {
+                bool: {
+                  must: [
+                    {
+                      match: {
+                        'categories.category_id': categoryId.id,
+                      },
+                    },
+                  ],
+                  must_not: [
+                    {
+                      exists: {
+                        field: 'categories.deleted_at',
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        ],
+        filter: {
+          script: {
+            script: {
+              source: `
+                def count = 0;
+                for(item in doc['categories__is_deleted']) {
+                  if (item == false) {
+                    count = count + 1;
+                  }
+                }
+                return count == 1;
+              `,
+            },
+          },
+        },
+      },
+    };
+    const result = await this.esClient.search({
+      index: this.index,
+      body: {
+        query,
+      },
+      _source: false as any,
+    });
+    return result.body.hits.total.value >= 1;
+  }
+
   async update(entity: Category): Promise<void> {
     let query: QueryDslQueryContainer = {
       bool: {
@@ -76,6 +191,16 @@ export class CategoryElasticSearchRepository implements ICategoryRepository {
           {
             match: {
               _id: entity.id.value,
+            },
+          },
+          {
+            nested: {
+              path: 'categories',
+              query: {
+                match: {
+                  'categories.category_id': entity.id.value,
+                },
+              },
             },
           },
         ],
@@ -88,11 +213,22 @@ export class CategoryElasticSearchRepository implements ICategoryRepository {
         query,
         script: {
           source: `
+          if (ctx._source.containsKey('categories')) {
+            for(item in ctx._source.categories) {
+              if (item.category_id == params.category_id) {
+                item.category_name = params.category_name;
+                item.is_active = params.is_active;
+                item.deleted_at = params.deleted_at;
+                item.is_deleted = params.is_deleted;
+              }
+            }
+          } else {
             ctx._source.category_name = params.category_name;
             ctx._source.category_description = params.category_description;
             ctx._source.is_active = params.is_active;
             ctx._source.created_at = params.created_at;
             ctx._source.deleted_at = params.deleted_at;
+          }
         `,
           params: {
             category_id: entity.id.value,

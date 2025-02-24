@@ -13,6 +13,13 @@ export class DeleteCategoryUseCase implements IUseCase<DeleteCategoryInput, Dele
       throw new NotFoundError(input.id, Category);
     }
 
+    const hasOnlyOneNotDeletedInRelated = await this.categoryRepository.hasOnlyOneNotDeletedInRelated(category.id);
+
+    if (hasOnlyOneNotDeletedInRelated) {
+      //criar um erro personalizado
+      throw new Error('At least one category must be present in related.');
+    }
+
     category.markAsDeleted();
 
     await this.categoryRepository.update(category);

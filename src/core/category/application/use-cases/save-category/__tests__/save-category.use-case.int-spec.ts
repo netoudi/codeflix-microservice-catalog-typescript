@@ -1,6 +1,6 @@
 import { SaveCategoryInput } from '@/core/category/application/use-cases/save-category/save-category.input';
 import { SaveCategoryUseCase } from '@/core/category/application/use-cases/save-category/save-category.use-case';
-import { CategoryId, Category } from '@/core/category/domain/category.entity';
+import { Category, CategoryId } from '@/core/category/domain/category.entity';
 import { CategoryElasticSearchRepository } from '@/core/category/infra/db/elastic-search/category-elastic-search.repository';
 import { setupElasticsearch } from '@/core/shared/infra/testing/global-helpers';
 
@@ -38,6 +38,38 @@ describe('SaveCategoryUseCase Integration Tests', () => {
       is_active: false,
       created_at,
     });
+  });
+
+  it('should throw error when there is only one active category in related and update data has is_active = false', async () => {
+    const category = Category.fake().aCategory().build();
+    await repository.insert(category);
+    await esHelper.esClient.create({
+      index: esHelper.indexName,
+      id: '1',
+      body: {
+        categories: [
+          {
+            category_id: category.category_id.id,
+            category_name: 'test',
+            is_active: true,
+            deleted_at: null,
+          },
+        ],
+      },
+      refresh: true,
+    });
+
+    await expect(() =>
+      useCase.execute(
+        new SaveCategoryInput({
+          id: category.category_id.id,
+          name: 'test',
+          description: 'some description',
+          is_active: false,
+          created_at: category.created_at,
+        }),
+      ),
+    ).rejects.toThrowError('Entity Validation Error');
   });
 
   it('should update a category', async () => {

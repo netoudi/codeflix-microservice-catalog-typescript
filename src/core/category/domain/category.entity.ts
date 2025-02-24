@@ -42,6 +42,10 @@ export class Category extends AggregateRoot {
     this.deleted_at = props.deleted_at ?? null;
   }
 
+  get category_id() {
+    return this.id;
+  }
+
   get entityId(): ValueObject {
     return this.id;
   }
