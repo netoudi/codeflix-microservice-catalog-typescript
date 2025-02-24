@@ -7,6 +7,15 @@ export class CategoryInMemoryRepository
   extends InMemorySearchableRepository<Category, CategoryId, CategoryFilter>
   implements ICategoryRepository
 {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  hasOnlyOneActivateInRelated(categoryId: CategoryId): Promise<boolean> {
+    throw new Error('Method not implemented.');
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  hasOnlyOneNotDeletedInRelated(categoryId: CategoryId): Promise<boolean> {
+    throw new Error('Method not implemented.');
+  }
   sortableFields: string[] = ['name', 'created_at'];
 
   protected async applyFilter(items: Category[], filter: CategoryFilter | null): Promise<Category[]> {
