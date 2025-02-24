@@ -22,6 +22,16 @@ export class SaveCategoryUseCase implements IUseCase<SaveCategoryInput, SaveCate
   }
 
   private async updateCategory(input: SaveCategoryInput, category: Category): Promise<SaveCategoryOutput> {
+    if (input.is_active === false) {
+      const hasOnlyOneActivateInRelated = await this.categoryRepository.hasOnlyOneActivateInRelated(category.id);
+      if (hasOnlyOneActivateInRelated) {
+        throw new EntityValidationError([
+          {
+            is_active: ['At least one category must be active in related.'],
+          },
+        ]);
+      }
+    }
     'name' in input && category.changeName(input.name);
     'description' in input && category.changeDescription(input.description);
     'is_active' in input && category[input.is_active ? 'activate' : 'deactivate']();
