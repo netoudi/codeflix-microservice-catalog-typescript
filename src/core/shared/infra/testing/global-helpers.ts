@@ -45,7 +45,24 @@ export function setupElasticsearch(options: SetupElasticsearchHelper = { deleteI
     _indexName = 'test_es_' + crypto.randomBytes(4).toString('hex');
     esDebug('Creating index %s', _indexName);
     _esClient = new ElasticsearchService({ node: _startedContainer.getHttpUrl() });
-    await _esClient.indices.create({ index: _indexName, body: { mappings: esMapping } });
+    await _esClient.indices.create({
+      index: _indexName,
+      body: {
+        mappings: esMapping,
+        settings: {
+          analysis: {
+            analyzer: {
+              ngram_analyzer: {
+                type: 'custom',
+                tokenizer: 'standard',
+                filter: ['lowercase', 'ngram_filter', 'asciifolding'],
+              },
+            },
+            filter: { ngram_filter: { type: 'ngram', min_gram: 3, max_gram: 4 } },
+          },
+        },
+      },
+    });
   });
 
   afterEach(async () => {
