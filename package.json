@@ -22,6 +22,7 @@
     "test:e2e:watch": "jest --config ./test/jest-e2e.config.ts --watch --runInBand"
   },
   "dependencies": {
+    "@confluentinc/schemaregistry": "^1.1.0",
     "@elastic/elasticsearch": "^7.17.14",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^4.0.0",
