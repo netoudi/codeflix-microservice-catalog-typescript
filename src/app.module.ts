@@ -6,12 +6,14 @@ import { CategoriesModule } from '@/modules/categories-module/categories.module'
 import { ConfigModule } from '@/modules/config-module/config.module';
 import { ElasticSearchModule } from '@/modules/elastic-search-module/elastic-search-module';
 import { GenresModule } from '@/modules/genres-module/genres.module';
+import { KafkaModule } from '@/modules/kafka-module/kafka.module';
 import { VideosModule } from '@/modules/videos-module/videos.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     ElasticSearchModule,
+    KafkaModule,
     CategoriesModule.forRoot(),
     GenresModule.forRoot(),
     CastMembersModule.forRoot(),

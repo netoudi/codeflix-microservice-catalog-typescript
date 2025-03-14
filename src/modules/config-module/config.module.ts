@@ -34,10 +34,24 @@ export const CONFIG_ELASTIC_SEARCH_ENV_SCHEMA: Joi.StrictSchemaMap<ELASTIC_SEARC
   ELASTIC_SEARCH_INDEX: Joi.string().required(),
 };
 
+type KAFKA_ENV_SCHEMA_TYPE = {
+  KAFKA_CONNECT_PREFIX: string;
+  KAFKA_BROKERS: string;
+};
+
+export const CONFIG_KAFKA_ENV_SCHEMA: Joi.StrictSchemaMap<KAFKA_ENV_SCHEMA_TYPE> = {
+  KAFKA_CONNECT_PREFIX: Joi.string().required(),
+  KAFKA_BROKERS: Joi.string().required(),
+};
+
 export type Configuration = {
   elastic_search: {
     host: string;
     index: string;
+  };
+  kafka: {
+    connect_prefix: string;
+    brokers: string;
   };
 };
 
@@ -57,6 +71,7 @@ export class ConfigModule extends NestConfigModule {
       load: [configuration],
       validationSchema: joiJson.object({
         ...CONFIG_ELASTIC_SEARCH_ENV_SCHEMA,
+        ...CONFIG_KAFKA_ENV_SCHEMA,
       }),
       ...otherOptions,
     });

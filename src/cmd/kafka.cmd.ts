@@ -2,6 +2,7 @@ import { SchemaRegistryClient } from '@confluentinc/schemaregistry';
 import { NestFactory } from '@nestjs/core';
 import { Transport } from '@nestjs/microservices';
 import { AppModule } from '@/app.module';
+import { KConnectEventPattern } from '@/modules/kafka-module/kconnect-event-pattern.decorator';
 import { SchemaRegistryDeserializer } from '@/modules/kafka-module/schema-registry-deserializer';
 
 async function bootstrap() {
@@ -19,6 +20,9 @@ async function bootstrap() {
       ),
     },
   });
+
+  await app.get(KConnectEventPattern).registerKConnectTopicDecorator();
+
   await app.listen();
 }
 
